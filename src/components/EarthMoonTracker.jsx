@@ -32,17 +32,20 @@ function getRocketState(now) {
   }
 
   if (now < FLYBY_END) {
-    // Flyby arc — semicircle above Moon
+    // Flyby arc — orbit around Moon's far side (right side)
     const t = (now - FLYBY_START) / (FLYBY_END - FLYBY_START);
-    const angle = Math.PI - t * Math.PI; // π → 0 (left side → right side, curving above)
-    const R = 20;
-    const cx = MOON_X - 4;
-    const cy = MID_Y - 8;
-    const x = cx + R * Math.cos(angle);
-    const y = cy - R * Math.sin(angle);
-    // Tangent angle for rotation
-    const tDx = -Math.sin(angle);
-    const tDy = -Math.cos(angle);
+    // Start angle: upper-left of Moon (approaching from outbound track)
+    // End angle: lower-left of Moon (departing on return track)
+    // Arc goes rightward (through far side) — the long way around
+    const startA = Math.atan2(OUT_Y - MID_Y, (MOON_X - 26) - MOON_X); // ≈ upper-left
+    const endA   = Math.atan2(RET_Y - MID_Y, (MOON_X - 26) - MOON_X); // ≈ lower-left
+    const sweep  = endA - startA; // positive sweep goes through far (right) side
+    const R = Math.sqrt(Math.pow((MOON_X - 26) - MOON_X, 2) + Math.pow(OUT_Y - MID_Y, 2));
+    const a = startA + t * sweep;
+    const x = MOON_X + R * Math.cos(a);
+    const y = MID_Y  + R * Math.sin(a);
+    const tDx = -Math.sin(a);
+    const tDy =  Math.cos(a);
     const rotate = Math.atan2(tDy, tDx) * (180 / Math.PI) - 90;
     return { x, y, rotate, phase: "Lunar Flyby", segment: "flyby", t };
   }
@@ -130,11 +133,7 @@ export default function EarthMoonTracker({ progress, positionSource, positionAcc
             />
           )}
 
-          {/* ── Flyby arc (background) ── */}
-          <path
-            d={`M ${MOON_X - 26},${OUT_Y} A 20,20 0 1 0 ${MOON_X - 26},${RET_Y}`}
-            fill="none" stroke="hsl(222 30% 22%)" strokeWidth="2" strokeDasharray="3 3"
-          />
+
 
           {/* ── Tick marks on outbound ── */}
           {[0.25, 0.5, 0.75].map((f) => (
