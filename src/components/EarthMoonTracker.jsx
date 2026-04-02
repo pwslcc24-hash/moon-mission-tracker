@@ -1,23 +1,27 @@
 import { Rocket } from "lucide-react";
 import { formatNumber } from "../lib/missionData";
 
-export default function EarthMoonTracker({ progress }) {
+const POSITION_LABEL = {
+  "live telemetry": { icon: "🟢", text: "Live telemetry" },
+  "estimated":      { icon: "🔵", text: "Calculated from official mission timeline" },
+  "last-known":     { icon: "🟡", text: "Last known official position" },
+};
+
+export default function EarthMoonTracker({ progress, positionSource, positionAccuracy }) {
   const percent = progress?.percent || 0;
   const rocketPosition = Math.min(Math.max(percent, 1), 99);
+  const accuracy = positionAccuracy || "estimated";
+  const label = POSITION_LABEL[accuracy] || POSITION_LABEL["estimated"];
 
   return (
     <div className="relative w-full bg-card/50 backdrop-blur-sm rounded-xl border border-border/50 p-4 sm:p-6 overflow-hidden">
-      {/* Data label */}
+      {/* Header */}
       <div className="flex items-center justify-between mb-3">
         <span className="text-xs font-mono text-muted-foreground uppercase tracking-wider">
           Earth → Moon Transit
         </span>
-        <span className="text-xs font-mono px-2 py-0.5 rounded-full bg-muted/50 text-muted-foreground">
-          {progress?.dataLabel === "estimated"
-            ? "⏱ Estimated from timeline"
-            : progress?.dataLabel === "live"
-            ? "🟢 Live telemetry"
-            : "🔵 Demo simulation"}
+        <span className="text-xs font-mono px-2 py-0.5 rounded-full bg-muted/50 text-muted-foreground" title={positionSource || ""}>
+          {label.icon} {label.text}
         </span>
       </div>
 
@@ -30,7 +34,6 @@ export default function EarthMoonTracker({ progress }) {
             className="absolute top-0 left-0 h-full bg-gradient-to-r from-primary/80 to-secondary/80 rounded-full transition-all duration-1000"
             style={{ width: `${rocketPosition}%` }}
           />
-          {/* Dashed markings */}
           {[25, 50, 75].map((mark) => (
             <div
               key={mark}
@@ -56,7 +59,6 @@ export default function EarthMoonTracker({ progress }) {
           <div className="relative flex flex-col items-center -translate-x-1/2">
             <div className="relative" style={{ animation: 'pulse-glow 2s ease-in-out infinite' }}>
               <Rocket className="w-5 h-5 sm:w-6 sm:h-6 text-primary rotate-[-45deg]" />
-              {/* Flame */}
               <div
                 className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-3 bg-gradient-to-b from-orange-400 to-transparent rounded-full opacity-70"
                 style={{ animation: 'rocket-flame 0.5s ease-in-out infinite', transform: 'translateX(-50%) rotate(45deg)' }}
@@ -82,6 +84,11 @@ export default function EarthMoonTracker({ progress }) {
         <div className="text-muted-foreground">
           <span className="text-foreground font-semibold">{formatNumber(progress?.distanceTraveledKm || 0)}</span> km traveled
         </div>
+        {positionSource && (
+          <div className="text-[10px] text-muted-foreground/50 hidden sm:block text-center px-2">
+            {positionSource}
+          </div>
+        )}
         <div className="text-muted-foreground text-right">
           <span className="text-foreground font-semibold">{formatNumber(progress?.distanceRemainingKm || 0)}</span> km remaining
         </div>

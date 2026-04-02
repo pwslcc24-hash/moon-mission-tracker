@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
 import { useOutletContext } from "react-router-dom";
-import { DEMO_MISSION, MOCK_MISSION, getMilestones, getMilestoneStatus, formatDuration } from "../lib/missionData";
+import { MISSION, getMilestoneStatus, formatDuration } from "../lib/missionData";
 import MissionClockDisplay from "../components/MissionClockDisplay";
 
 export default function Clocks() {
-  const { mode } = useOutletContext();
-  const mission = mode === "demo" ? DEMO_MISSION : MOCK_MISSION;
-  const milestones = getMilestones(mission);
+  const { missionData } = useOutletContext();
+  const mission = MISSION;
+  const milestones = missionData?.milestones || [];
   const [, setTick] = useState(0);
   const [timeFormat, setTimeFormat] = useState("local");
 
@@ -63,8 +63,9 @@ export default function Clocks() {
           accent="green"
         />
         <MissionClockDisplay
-          label="Countdown to Lunar Arrival"
-          targetMs={new Date(mission.lunarArrivalDate).getTime()}
+          label="Countdown to Lunar Flyby"
+          targetMs={new Date(missionData?.arrivalTime || mission.lunarArrivalDate).getTime()}
+          note="Estimated arrival"
           type="countdown"
           accent="primary"
         />
@@ -128,7 +129,7 @@ export default function Clocks() {
       </div>
 
       <div className="text-[10px] text-muted-foreground/60 text-center">
-        Clocks update every second. All times {mode === "demo" ? "are simulated for demonstration" : "are estimated from mission planning data"}.
+        Clocks update every second from your device clock. Launch time confirmed. All other times are estimated from official NASA mission planning.
       </div>
     </div>
   );

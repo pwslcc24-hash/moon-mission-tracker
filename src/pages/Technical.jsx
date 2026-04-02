@@ -1,5 +1,5 @@
 import { useOutletContext } from "react-router-dom";
-import { DEMO_MISSION, MOCK_MISSION } from "../lib/missionData";
+import { MISSION } from "../lib/missionData";
 import { Rocket, Users, MapPin, Calendar, Globe, Gauge } from "lucide-react";
 import moment from "moment";
 
@@ -25,8 +25,8 @@ function SectionCard({ title, icon: Icon, children }) {
 }
 
 export default function Technical() {
-  const { mode } = useOutletContext();
-  const mission = mode === "demo" ? DEMO_MISSION : MOCK_MISSION;
+  const { missionData } = useOutletContext();
+  const mission = MISSION;
 
   return (
     <div className="space-y-6">
@@ -83,7 +83,7 @@ export default function Technical() {
       </div>
 
       <div className="text-[10px] text-muted-foreground/60 text-center">
-        Technical data sourced from NASA Artemis Program documentation. {mode === "demo" && "Times are simulated in demo mode."}
+        Technical data sourced from NASA Artemis Program documentation. Launch time confirmed. Arrival and return times are estimated from official mission planning.
       </div>
     </div>
   );

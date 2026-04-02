@@ -1,12 +1,11 @@
 import { useState } from "react";
 import { useOutletContext } from "react-router-dom";
-import { DEMO_MISSION, MOCK_MISSION, getMilestones } from "../lib/missionData";
+import { MISSION } from "../lib/missionData";
 import TimelineEvent from "../components/TimelineEvent";
 
 export default function Timeline() {
-  const { mode } = useOutletContext();
-  const mission = mode === "demo" ? DEMO_MISSION : MOCK_MISSION;
-  const milestones = getMilestones(mission);
+  const { missionData } = useOutletContext();
+  const milestones = missionData?.milestones || [];
   const [timeFormat, setTimeFormat] = useState("local");
 
   return (
@@ -15,7 +14,7 @@ export default function Timeline() {
         <div>
           <h1 className="text-xl font-bold text-foreground">Mission Timeline</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            All key milestones for {mission.name} in chronological order
+            All key milestones for {MISSION.name} in chronological order
           </p>
         </div>
         <div className="flex items-center gap-1 bg-muted/30 rounded-lg p-1">
@@ -48,8 +47,7 @@ export default function Timeline() {
       </div>
 
       <div className="text-[10px] text-muted-foreground/60 text-center">
-        Timeline data is {mode === "demo" ? "simulated for demonstration" : "estimated from mission planning documents"}. 
-        Actual times may vary. Source attribution shown per event.
+        Launch time confirmed. Milestone times are estimated from official NASA mission planning documents. Actual times may vary.
       </div>
     </div>
   );

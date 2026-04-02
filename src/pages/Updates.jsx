@@ -1,30 +1,14 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useOutletContext } from "react-router-dom";
 import { RefreshCw, Loader2 } from "lucide-react";
-import { DEMO_MISSION, MOCK_MISSION, getUpdates, getLiveData } from "../lib/missionData";
+import moment from "moment";
 import UpdateCard from "../components/UpdateCard";
+import { MISSION } from "../lib/missionData";
 
 export default function Updates() {
-  const { mode } = useOutletContext();
-  const mission = mode === "demo" ? DEMO_MISSION : MOCK_MISSION;
-  const [updates, setUpdates] = useState(() => getUpdates(mission).reverse());
+  const { missionData, lastUpdated, refresh, refreshing } = useOutletContext();
+  const updates = missionData?.updates || [];
   const [filter, setFilter] = useState("all");
-  const [lastRefresh, setLastRefresh] = useState(new Date());
-  const [loading, setLoading] = useState(false);
-
-  const fetchUpdates = async () => {
-    if (mode === "live") {
-      setLoading(true);
-      const data = await getLiveData();
-      setUpdates(data?.updates?.length ? data.updates : getUpdates(mission).reverse());
-      setLoading(false);
-    } else {
-      setUpdates(getUpdates(mission).reverse());
-    }
-    setLastRefresh(new Date());
-  };
-
-  const handleRefresh = () => fetchUpdates();
 
   const filtered = filter === "all" ? updates : updates.filter((u) => u.sourceType === filter);
 
@@ -34,24 +18,25 @@ export default function Updates() {
         <div>
           <h1 className="text-xl font-bold text-foreground">Latest Updates</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Sourced updates for {mission.name} — every entry has attribution
+            Live articles for {MISSION.name} — every entry has source attribution
           </p>
         </div>
         <button
-          onClick={handleRefresh}
-          className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border/50 bg-card/80 hover:bg-muted/80 transition-colors text-xs text-muted-foreground"
+          onClick={refresh}
+          disabled={refreshing}
+          className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border/50 bg-card/80 hover:bg-muted/80 transition-colors text-xs text-muted-foreground disabled:opacity-50"
         >
-          <RefreshCw className="w-3.5 h-3.5" />
-          Refresh
+          {refreshing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
+          {refreshing ? "Refreshing…" : "Refresh"}
         </button>
       </div>
 
       {/* Filters */}
       <div className="flex items-center gap-1 flex-wrap">
         {[
-          { value: "all", label: "All" },
+          { value: "all",      label: "All" },
           { value: "official", label: "Official" },
-          { value: "news", label: "News" },
+          { value: "news",     label: "News" },
         ].map((opt) => (
           <button
             key={opt.value}
@@ -73,14 +58,14 @@ export default function Updates() {
         ))}
         {filtered.length === 0 && (
           <div className="text-center py-12 text-muted-foreground text-sm">
-            No updates match this filter.
+            {updates.length === 0 ? "No live updates loaded yet." : "No updates match this filter."}
           </div>
         )}
       </div>
 
       <div className="text-[10px] text-muted-foreground/60 text-center">
-        Auto-refreshes every 60 seconds. Last refresh: {lastRefresh.toLocaleTimeString()}
-        {mode === "demo" && " • Using simulated data in demo mode"}
+        Live articles from Spaceflight News API — auto-refreshes every 90 seconds
+        {lastUpdated && ` • Last updated: ${moment(lastUpdated).fromNow()}`}
       </div>
     </div>
   );

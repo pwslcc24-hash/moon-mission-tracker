@@ -1,12 +1,8 @@
 import { useState, useEffect } from "react";
 import { useOutletContext, Link } from "react-router-dom";
-import { Rocket, MapPin, Clock, Gauge, ArrowRight } from "lucide-react";
+import { Rocket, MapPin, Clock, Gauge, ArrowRight, AlertTriangle, Loader2 } from "lucide-react";
 import moment from "moment";
-import {
-  DEMO_MISSION, MOCK_MISSION,
-  calculateMissionProgress, getMilestones, getUpdates,
-  formatNumber, formatDuration,
-} from "../lib/missionData";
+import { MISSION, calculateMissionProgress, formatNumber } from "../lib/missionData";
 import EarthMoonTracker from "../components/EarthMoonTracker";
 import MissionStatusBanner from "../components/MissionStatusBanner";
 import MissionClockDisplay from "../components/MissionClockDisplay";
@@ -14,47 +10,80 @@ import StatCard from "../components/StatCard";
 import UpdateCard from "../components/UpdateCard";
 
 export default function Dashboard() {
-  const { mode } = useOutletContext();
-  const mission = mode === "demo" ? DEMO_MISSION : MOCK_MISSION;
-  const [progress, setProgress] = useState(() => calculateMissionProgress(mission));
+  const { missionData, loading, error, lastUpdated } = useOutletContext();
+  const [progress, setProgress] = useState(() => calculateMissionProgress(missionData || MISSION));
+  const [tick, setTick] = useState(0);
+
+  // Recalculate progress every second from live timestamps
+  useEffect(() => {
+    const interval = setInterval(() => setTick(t => t + 1), 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
-    setProgress(calculateMissionProgress(mission));
-    const interval = setInterval(() => {
-      setProgress(calculateMissionProgress(mission));
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [mode]);
+    setProgress(calculateMissionProgress(missionData || MISSION));
+  }, [missionData, tick]);
 
-  const milestones = getMilestones(mission);
-  const updates = getUpdates(mission);
-  const latestUpdates = updates.slice(-3).reverse();
+  const milestones = missionData?.milestones || [];
+  const latestUpdates = (missionData?.updates || []).slice(0, 3);
+  const nextMilestone = milestones.find(m => !m.actualTime && new Date(m.scheduledTime) > new Date());
 
-  const nextMilestone = milestones.find(
-    (m) => !m.actualTime || new Date(m.scheduledTime) > new Date()
-  );
+  if (loading && !missionData) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+        <Loader2 className="w-8 h-8 text-primary animate-spin" />
+        <p className="text-sm text-muted-foreground">Fetching live mission data…</p>
+      </div>
+    );
+  }
+
+  const launchMs   = new Date(missionData?.launchTime  || MISSION.launchDate).getTime();
+  const arrivalMs  = new Date(missionData?.arrivalTime || MISSION.lunarArrivalDate).getTime();
 
   return (
     <div className="space-y-6">
+      {/* Stale data warning */}
+      {error && (
+        <div className="flex items-center gap-3 px-4 py-3 rounded-xl border border-yellow-500/30 bg-yellow-500/10 text-sm text-yellow-300">
+          <AlertTriangle className="w-4 h-4 shrink-0" />
+          <div>
+            <span className="font-semibold">Live data temporarily unavailable.</span>
+            <span className="text-yellow-300/70 ml-2">
+              Showing calculated estimates from confirmed mission timeline.
+              {lastUpdated && ` Last successful update: ${moment(lastUpdated).fromNow()}.`}
+            </span>
+          </div>
+        </div>
+      )}
+
       {/* Status Banner */}
-      <MissionStatusBanner mission={mission} progress={progress} mode={mode} />
+      <MissionStatusBanner
+        missionData={missionData}
+        progress={progress}
+        lastUpdated={lastUpdated}
+      />
 
       {/* Earth-Moon Tracker */}
-      <EarthMoonTracker progress={progress} />
+      <EarthMoonTracker
+        progress={progress}
+        positionSource={missionData?.positionSource}
+        positionAccuracy={missionData?.positionAccuracy}
+      />
 
-      {/* Mission Clocks Row */}
+      {/* Mission Clocks */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <MissionClockDisplay
-          label="Mission Elapsed Time"
-          targetMs={new Date(mission.launchDate).getTime()}
+          label="Mission Elapsed Time (MET)"
+          targetMs={launchMs}
           type="elapsed"
           accent="green"
         />
         <MissionClockDisplay
-          label="Lunar Arrival"
-          targetMs={new Date(mission.lunarArrivalDate).getTime()}
+          label="Countdown to Lunar Flyby"
+          targetMs={arrivalMs}
           type="countdown"
           accent="primary"
+          note={missionData?.arrivalTimeConfidence === "estimated" ? "Estimated arrival" : null}
         />
         {nextMilestone && (
           <MissionClockDisplay
@@ -62,6 +91,7 @@ export default function Dashboard() {
             targetMs={new Date(nextMilestone.scheduledTime).getTime()}
             type="countdown"
             accent="secondary"
+            note={nextMilestone.confidence === "estimated" ? "Estimated" : null}
           />
         )}
       </div>
@@ -71,30 +101,30 @@ export default function Dashboard() {
         <StatCard
           label="Progress"
           value={`${progress.percent.toFixed(1)}%`}
-          sub="to the Moon"
+          sub={progress.isComplete ? "Flyby complete" : "to lunar flyby"}
           icon={Gauge}
         />
         <StatCard
-          label="Distance"
+          label="Distance Traveled"
           value={`${formatNumber(progress.distanceTraveledKm)} km`}
-          sub={`of ${formatNumber(mission.totalDistanceKm)} km`}
+          sub={`of ${formatNumber(MISSION.totalDistanceKm)} km`}
           icon={MapPin}
         />
         <StatCard
-          label="Mission Phase"
+          label="Current Phase"
           value={progress.phase}
-          sub={mission.missionType}
+          sub={MISSION.missionType}
           icon={Rocket}
         />
         <StatCard
           label="Launch"
-          value={moment(mission.launchDate).format("MMM D")}
-          sub={moment(mission.launchDate).format("h:mm A")}
+          value={moment(MISSION.launchDate).format("Apr D")}
+          sub={moment(MISSION.launchDate).utc().format("HH:mm UTC")}
           icon={Clock}
         />
       </div>
 
-      {/* Latest Updates + Quick Links */}
+      {/* Latest Updates + Quick Info */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div className="lg:col-span-2 space-y-3">
           <div className="flex items-center justify-between">
@@ -103,9 +133,13 @@ export default function Dashboard() {
               View all <ArrowRight className="w-3 h-3" />
             </Link>
           </div>
-          {latestUpdates.map((u) => (
-            <UpdateCard key={u.id} update={u} />
-          ))}
+          {latestUpdates.length > 0 ? (
+            latestUpdates.map((u) => <UpdateCard key={u.id} update={u} />)
+          ) : (
+            <div className="text-sm text-muted-foreground py-6 text-center">
+              No updates loaded yet.
+            </div>
+          )}
         </div>
 
         <div className="space-y-3">
@@ -113,20 +147,20 @@ export default function Dashboard() {
           <div className="bg-card/60 backdrop-blur-sm rounded-lg border border-border/50 p-4 space-y-3">
             <div>
               <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Mission</span>
-              <p className="text-sm font-semibold">{mission.name}</p>
+              <p className="text-sm font-semibold">{MISSION.name}</p>
             </div>
             <div>
               <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Vehicle</span>
-              <p className="text-sm font-medium text-muted-foreground">{mission.vehicle}</p>
+              <p className="text-sm font-medium text-muted-foreground">{MISSION.vehicle}</p>
             </div>
             <div>
               <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Launch Site</span>
-              <p className="text-sm font-medium text-muted-foreground">{mission.launchSite}</p>
+              <p className="text-sm font-medium text-muted-foreground">{MISSION.launchSite}</p>
             </div>
             <div>
               <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Crew</span>
               <div className="space-y-1 mt-1">
-                {mission.crew.map((c) => (
+                {MISSION.crew.map((c) => (
                   <p key={c.name} className="text-xs text-muted-foreground">
                     <span className="text-foreground/80 font-medium">{c.name}</span> — {c.role}
                   </p>
