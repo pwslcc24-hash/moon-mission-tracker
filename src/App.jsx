@@ -5,7 +5,14 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
-// Add page imports here
+import Layout from './components/Layout';
+import Dashboard from './pages/Dashboard';
+import Timeline from './pages/Timeline';
+import Updates from './pages/Updates';
+import Sources from './pages/Sources';
+import Clocks from './pages/Clocks';
+import Technical from './pages/Technical';
+import DataStatus from './pages/DataStatus';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -33,8 +40,16 @@ const AuthenticatedApp = () => {
   // Render the main app
   return (
     <Routes>
-      {/* Add your page Route elements here */}
-      <Route path="*" element={<PageNotFound />} />
+      <Route element={<Layout />}>
+        <Route path="/" element={<Dashboard />} />
+        <Route path="/timeline" element={<Timeline />} />
+        <Route path="/updates" element={<Updates />} />
+        <Route path="/sources" element={<Sources />} />
+        <Route path="/clocks" element={<Clocks />} />
+        <Route path="/technical" element={<Technical />} />
+        <Route path="/data-status" element={<DataStatus />} />
+        <Route path="*" element={<PageNotFound />} />
+      </Route>
     </Routes>
   );
 };
