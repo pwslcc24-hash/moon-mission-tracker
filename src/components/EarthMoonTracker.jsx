@@ -61,7 +61,7 @@ export default function EarthMoonTracker({ progress, positionSource, positionAcc
           <div className="relative flex flex-col items-center -translate-x-1/2">
             <div className="relative" style={{ animation: 'pulse-glow 2s ease-in-out infinite' }}>
               {/* SLS-style rocket SVG */}
-              <svg width="22" height="28" viewBox="0 0 22 28" fill="none" xmlns="http://www.w3.org/2000/svg" className="rotate-[-45deg]">
+              <svg width="22" height="28" viewBox="0 0 22 28" fill="none" xmlns="http://www.w3.org/2000/svg" style={{transform: 'rotate(-45deg)'}}>
                 {/* Core stage */}
                 <rect x="8" y="6" width="6" height="16" rx="1" fill="hsl(217, 91%, 70%)" />
                 {/* Nose cone / Orion capsule */}
