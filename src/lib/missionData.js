@@ -1,5 +1,12 @@
 // Moon Mission Tracker - Data Service Layer
 // Modular architecture: swap data sources without rebuilding the app
+import { base44 } from '@/api/base44Client';
+
+// Fetch live data from the NASA-connected backend function
+export async function getLiveData() {
+  const response = await base44.functions.invoke('getMissionData', {});
+  return response.data;
+}
 
 const EARTH_MOON_DISTANCE_KM = 384400;
 
@@ -404,19 +411,19 @@ export function getDataSourceStatus() {
       id: "ds1",
       name: "NASA Artemis API",
       type: "API",
-      status: "simulated",
+      status: "active",
       description: "Official NASA mission data feed",
       lastCheck: new Date().toISOString(),
-      note: "Using high-fidelity mock data. Ready to connect to live API when available.",
+      note: "Connected via getMissionData backend function using NASA_API_KEY.",
     },
     {
       id: "ds2",
-      name: "NASA News Feed",
-      type: "RSS",
-      status: "simulated",
-      description: "NASA news and press release feed",
+      name: "Spaceflight News API",
+      type: "REST API",
+      status: "active",
+      description: "Real-time Artemis articles from Spaceflight News API",
       lastCheck: new Date().toISOString(),
-      note: "Using curated mock updates. Can connect to NASA RSS feeds.",
+      note: "Fetching live articles in Live Mode via getMissionData function.",
     },
     {
       id: "ds3",

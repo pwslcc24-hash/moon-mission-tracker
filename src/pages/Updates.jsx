@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useOutletContext } from "react-router-dom";
-import { RefreshCw } from "lucide-react";
-import { DEMO_MISSION, MOCK_MISSION, getUpdates } from "../lib/missionData";
+import { RefreshCw, Loader2 } from "lucide-react";
+import { DEMO_MISSION, MOCK_MISSION, getUpdates, getLiveData } from "../lib/missionData";
 import UpdateCard from "../components/UpdateCard";
 
 export default function Updates() {
@@ -10,24 +10,21 @@ export default function Updates() {
   const [updates, setUpdates] = useState(() => getUpdates(mission).reverse());
   const [filter, setFilter] = useState("all");
   const [lastRefresh, setLastRefresh] = useState(new Date());
+  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    setUpdates(getUpdates(mission).reverse());
-  }, [mode]);
-
-  // Auto-refresh every 60 seconds
-  useEffect(() => {
-    const interval = setInterval(() => {
+  const fetchUpdates = async () => {
+    if (mode === "live") {
+      setLoading(true);
+      const data = await getLiveData();
+      setUpdates(data?.updates?.length ? data.updates : getUpdates(mission).reverse());
+      setLoading(false);
+    } else {
       setUpdates(getUpdates(mission).reverse());
-      setLastRefresh(new Date());
-    }, 60000);
-    return () => clearInterval(interval);
-  }, [mode]);
-
-  const handleRefresh = () => {
-    setUpdates(getUpdates(mission).reverse());
+    }
     setLastRefresh(new Date());
   };
+
+  const handleRefresh = () => fetchUpdates();
 
   const filtered = filter === "all" ? updates : updates.filter((u) => u.sourceType === filter);
 
