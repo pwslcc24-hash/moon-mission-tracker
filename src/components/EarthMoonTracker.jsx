@@ -1,10 +1,13 @@
 import DistanceDisplay from "./DistanceDisplay";
 
-// Mission phase timestamps
-const LAUNCH_TIME    = new Date("2026-04-01T22:35:00Z").getTime();
+// Mission phase timestamps — sourced from NASA official data & Wikipedia Artemis II
+// Launch: 2026-04-01T22:35:12Z (confirmed exact time, Wikipedia infobox)
+// Flyby: April 6 confirmed by NASA; 7,600 km closest approach
+// Splashdown: NET 2026-04-11T00:21:00Z (Wikipedia Artemis II infobox)
+const LAUNCH_TIME    = new Date("2026-04-01T22:35:12Z").getTime();
 const FLYBY_START    = new Date("2026-04-06T18:00:00Z").getTime();
 const FLYBY_END      = new Date("2026-04-07T06:00:00Z").getTime();
-const RETURN_END     = new Date("2026-04-11T00:00:00Z").getTime();
+const RETURN_END     = new Date("2026-04-11T00:21:00Z").getTime();
 
 // SVG layout constants
 const VB_W = 500;

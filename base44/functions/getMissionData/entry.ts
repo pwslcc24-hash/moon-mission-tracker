@@ -1,17 +1,22 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 
 // ─── Confirmed Mission Constants ───
-// Launch confirmed: April 1, 2026 at 6:35 PM EDT (22:35 UTC)
-// Source: NASA press release + news coverage
-const CONFIRMED_LAUNCH_TIME = "2026-04-01T22:35:00Z";
+// Source: Wikipedia (Artemis II), NASA official pages, NBC News
+// Launch: April 1, 2026, 22:35:12 UTC — confirmed by NASA (exact seconds from Wikipedia infobox)
+const CONFIRMED_LAUNCH_TIME = "2026-04-01T22:35:12Z";
+
+// Earth–Moon average distance: 238,855 miles = 384,400 km (standard IAU value)
 
 // Artemis II is a ~10-day free-return crewed lunar flyby
-// Lunar flyby estimated ~4-5 days after launch based on official mission profile
-// These are ESTIMATED from official mission planning documents
-const ESTIMATED_ARRIVAL_TIME = "2026-04-06T18:00:00Z";  // ~T+4d 19.5h
-const ESTIMATED_RETURN_TIME  = "2026-04-11T00:00:00Z";  // ~T+9d 1.5h
+// Lunar flyby: April 6 (confirmed by NASA/NBC News) — closest approach ~7,600 km from Moon
+// Splashdown: NET April 11, 2026, 00:21 UTC — source: Wikipedia Artemis II infobox
+const ESTIMATED_ARRIVAL_TIME = "2026-04-06T18:00:00Z";  // ~T+4d 19h, April 6 confirmed
+const ESTIMATED_RETURN_TIME  = "2026-04-11T00:21:00Z";  // NET confirmed: Wikipedia Artemis II
 
-const TOTAL_DISTANCE_KM = 384400; // Earth-Moon distance
+// Average Earth–Moon distance: 238,855 miles / 384,400 km (IAU standard)
+// Total round-trip trajectory (free-return path): ~2.1M km, but outbound leg to Moon = 384,400 km
+const TOTAL_DISTANCE_KM = 384400; // one-way Earth–Moon average distance (km)
+const TOTAL_DISTANCE_MI = 238855; // one-way Earth–Moon average distance (miles)
 
 const CREW = [
   { name: "Reid Wiseman",   role: "Commander" },
@@ -186,10 +191,12 @@ const FALLBACK = {
   missionDurationDays: 10,
   description: "First crewed mission beyond Earth orbit since Apollo 17 in 1972. Four astronauts fly a free-return trajectory around the Moon aboard NASA's Orion spacecraft.",
   crew: CREW,
-  positionSource: "Calculated from confirmed launch time + official mission profile",
+  positionSource: "Calculated from official mission timeline (NASA/Wikipedia)",
   positionAccuracy: "estimated",
+  positionSourceUrl: "https://en.wikipedia.org/wiki/Artemis_II",
+  dataNote: "Position calculated from confirmed NASA launch time. Flyby/splashdown times are NET estimates from official sources.",
   liveDataAvailable: false,
-  liveDataError: "Live data temporarily unavailable",
+  liveDataError: "Data temporarily unavailable — waiting for confirmed mission update.",
   updates: [],
   source: "fallback",
 };
@@ -254,8 +261,10 @@ Deno.serve(async (req) => {
       distanceTraveled: progress.distanceTraveled,
       distanceRemaining: progress.distanceRemaining,
       totalDistanceKm: TOTAL_DISTANCE_KM,
-      positionSource: "Calculated from confirmed launch time + official mission profile",
-      positionAccuracy: "estimated",
+      positionSource: "Calculated from confirmed launch time (NASA, 2026-04-01T22:35:12Z)",
+      positionAccuracy: "calculated",
+      positionSourceUrl: "https://en.wikipedia.org/wiki/Artemis_II",
+      dataNote: "Launch time confirmed by NASA. Flyby/return times are NET estimates from official mission documents.",
       elapsedMs: progress.elapsedMs,
       remainingMs: progress.remainingMs,
       isPreLaunch: progress.isPreLaunch,

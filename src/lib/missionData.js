@@ -7,11 +7,12 @@ export const MISSION = {
   agency: "NASA / CSA",
   vehicle: "Orion MPCV / SLS Block 1",
   launchSite: "Kennedy Space Center, LC-39B",
-  launchDate: "2026-04-01T22:35:00Z",         // CONFIRMED
-  lunarArrivalDate: "2026-04-06T18:00:00Z",    // ESTIMATED
-  returnDate: "2026-04-11T00:00:00Z",          // ESTIMATED
+  launchDate: "2026-04-01T22:35:12Z",         // CONFIRMED — exact seconds from Wikipedia/NASA
+  lunarArrivalDate: "2026-04-06T18:00:00Z",    // ESTIMATED — April 6 confirmed by NASA
+  returnDate: "2026-04-11T00:21:00Z",          // NET CONFIRMED — Wikipedia Artemis II infobox
   missionDurationDays: 10,
-  totalDistanceKm: 384400,
+  totalDistanceKm: 384400,   // Average Earth–Moon distance (IAU: 238,855 mi / 384,400 km)
+  totalDistanceMi: 238855,
   missionType: "Crewed Lunar Free-Return Flyby",
   description: "First crewed mission beyond Earth orbit since Apollo 17 in 1972. Four astronauts fly a free-return trajectory around the Moon aboard NASA's Orion spacecraft.",
   crew: [
