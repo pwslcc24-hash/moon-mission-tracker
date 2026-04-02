@@ -1,4 +1,3 @@
-import { Rocket } from "lucide-react";
 import DistanceDisplay from "./DistanceDisplay";
 
 const POSITION_LABEL = {
@@ -61,11 +60,27 @@ export default function EarthMoonTracker({ progress, positionSource, positionAcc
         >
           <div className="relative flex flex-col items-center -translate-x-1/2">
             <div className="relative" style={{ animation: 'pulse-glow 2s ease-in-out infinite' }}>
-              <Rocket className="w-5 h-5 sm:w-6 sm:h-6 text-primary rotate-[-45deg]" />
-              <div
-                className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-3 bg-gradient-to-b from-orange-400 to-transparent rounded-full opacity-70"
-                style={{ animation: 'rocket-flame 0.5s ease-in-out infinite', transform: 'translateX(-50%) rotate(45deg)' }}
-              />
+              {/* SLS-style rocket SVG */}
+              <svg width="22" height="28" viewBox="0 0 22 28" fill="none" xmlns="http://www.w3.org/2000/svg" style={{transform: 'rotate(-45deg)'}}>
+                {/* Core stage */}
+                <rect x="8" y="6" width="6" height="16" rx="1" fill="hsl(217 91% 70%)" />
+                {/* Nose cone / Orion capsule */}
+                <path d="M11 1 L14 6 H8 Z" fill="hsl(217 91% 80%)" />
+                {/* Left SRB */}
+                <rect x="4" y="9" width="3" height="12" rx="1" fill="hsl(217 91% 60%)" />
+                <path d="M5.5 7 L7 9 H4 Z" fill="hsl(217 91% 70%)" />
+                {/* Right SRB */}
+                <rect x="15" y="9" width="3" height="12" rx="1" fill="hsl(217 91% 60%)" />
+                <path d="M16.5 7 L18 9 H15 Z" fill="hsl(217 91% 70%)" />
+                {/* Engine nozzles */}
+                <rect x="9" y="22" width="4" height="2" rx="0.5" fill="hsl(217 91% 50%)" />
+                <rect x="5" y="21" width="2" height="2" rx="0.5" fill="hsl(217 91% 50%)" />
+                <rect x="15" y="21" width="2" height="2" rx="0.5" fill="hsl(217 91% 50%)" />
+                {/* Flame */}
+                <path d="M9 24 Q11 28 13 24" fill="orange" opacity="0.85" style={{animation: 'rocket-flame 0.5s ease-in-out infinite'}} />
+                <path d="M5.2 23 Q6.5 26 7.2 23" fill="orange" opacity="0.7" style={{animation: 'rocket-flame 0.5s ease-in-out infinite'}} />
+                <path d="M14.8 23 Q16 26 16.8 23" fill="orange" opacity="0.7" style={{animation: 'rocket-flame 0.5s ease-in-out infinite'}} />
+              </svg>
             </div>
             <span className="text-[10px] font-mono text-primary mt-1 whitespace-nowrap font-semibold">
               {percent.toFixed(1)}%
