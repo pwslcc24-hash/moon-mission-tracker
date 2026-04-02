@@ -45,8 +45,11 @@ export default function EarthMoonTracker({ progress, positionSource, positionAcc
 
         {/* Earth */}
         <div className="absolute left-0 top-1/2 -translate-y-1/2 flex flex-col items-center z-10">
-          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-blue-400 via-green-400 to-blue-600 shadow-lg shadow-blue-500/20 flex items-center justify-center text-xs font-bold text-white">
-            🌍
+          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-blue-400 via-green-400 to-blue-600 shadow-lg shadow-blue-500/20 relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-green-500/40 to-transparent rounded-full" />
+            <div className="absolute top-1 left-2 w-2 h-1.5 bg-green-400/60 rounded-full rotate-12" />
+            <div className="absolute bottom-2 right-1 w-3 h-1.5 bg-green-500/50 rounded-full -rotate-12" />
+            <div className="absolute inset-0 rounded-full" style={{background: 'radial-gradient(circle at 35% 35%, rgba(255,255,255,0.15) 0%, transparent 60%)'}} />
           </div>
           <span className="text-[10px] sm:text-xs text-muted-foreground mt-1 font-medium">Earth</span>
         </div>
