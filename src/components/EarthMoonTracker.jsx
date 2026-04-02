@@ -154,7 +154,7 @@ export default function EarthMoonTracker({ progress, positionSource, positionAcc
           <text x={MOON_X} y={MID_Y + 28} textAnchor="middle" fontSize="9" fill="hsl(215 20% 55%)" fontFamily="monospace">Moon</text>
 
           {/* ── Rocket ── */}
-          <g transform={`translate(${rocket.x}, ${rocket.y}) rotate(${rocket.rotate})`}>
+          <g transform={`translate(${rocket.x}, ${rocket.y}) scale(${rocket.segment === 'return' ? -1 : 1}, 1) rotate(${rocket.segment === 'flyby' ? rocket.rotate : -45})`}>
             {/* glow */}
             <circle r="10" fill="hsl(217 91% 60% / 0.12)" />
             {/* SLS body */}
@@ -172,6 +172,27 @@ export default function EarthMoonTracker({ progress, positionSource, positionAcc
             <path d="M -5,3 Q -4,5.5 -3.5,3" fill="orange" opacity="0.7" />
             <path d="M 3.5,3 Q 4,5.5 5,3" fill="orange" opacity="0.7" />
           </g>
+          {/* % label below rocket */}
+          <text
+            x={rocket.x}
+            y={rocket.segment === 'return' ? rocket.y + 22 : rocket.y + 22}
+            textAnchor="middle"
+            fontSize="8"
+            fill="hsl(217 91% 70%)"
+            fontFamily="monospace"
+            fontWeight="bold"
+          >
+            {(() => {
+              // overall trip percent across all segments
+              const outDur   = FLYBY_START - LAUNCH_TIME;
+              const flybyDur = FLYBY_END   - FLYBY_START;
+              const retDur   = RETURN_END  - FLYBY_END;
+              const total    = outDur + flybyDur + retDur;
+              const now2     = Date.now();
+              const elapsed  = Math.min(Math.max(now2 - LAUNCH_TIME, 0), total);
+              return (elapsed / total * 100).toFixed(1) + "%";
+            })()}
+          </text>
 
           {/* Defs */}
           <defs>
