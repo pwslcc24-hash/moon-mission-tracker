@@ -54,10 +54,10 @@ export default function Layout() {
       {/* Mobile header */}
       <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-card/90 backdrop-blur-lg border-b border-border/50">
         <div className="flex items-center justify-between px-4 h-14">
-          <div className="flex items-center gap-2">
+          <Link to="/" className="flex items-center gap-2">
             <Rocket className="w-5 h-5 text-primary" />
             <span className="font-bold text-sm">Moon Mission Tracker</span>
-          </div>
+          </Link>
           <div className="flex items-center gap-2">
             {/* Live indicator */}
             <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-muted/50 text-xs">
