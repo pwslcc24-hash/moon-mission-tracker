@@ -1,5 +1,6 @@
 import { useOutletContext } from "react-router-dom";
-import { MISSION } from "../lib/missionData";
+import { MISSION, formatNumber } from "../lib/missionData";
+import { kmToMiles } from "../components/DistanceDisplay";
 import { Rocket, Users, MapPin, Calendar, Globe, Gauge } from "lucide-react";
 import moment from "moment";
 
@@ -67,7 +68,12 @@ export default function Technical() {
         </SectionCard>
 
         <SectionCard title="Trajectory" icon={Globe}>
-          <DetailRow label="Earth-Moon Distance" value="384,400 km" />
+          <DetailRow label="Earth-Moon Distance" value={
+            <span className="flex flex-col items-end leading-tight">
+              <span className="font-bold">{formatNumber(kmToMiles(384400))} mi</span>
+              <span className="text-[11px] text-muted-foreground font-normal">384,400 km</span>
+            </span>
+          } />
           <DetailRow label="Transit Time (est.)" value={`~${Math.round((new Date(mission.lunarArrivalDate) - new Date(mission.launchDate)) / 3600000)} hours`} />
           <DetailRow label="Orbit Type" value="Free-return trajectory" />
           <DetailRow label="Lunar Closest Approach" value="~130 km altitude" />

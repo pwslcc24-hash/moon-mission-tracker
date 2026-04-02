@@ -1,5 +1,5 @@
 import { Rocket } from "lucide-react";
-import { formatNumber } from "../lib/missionData";
+import DistanceDisplay from "./DistanceDisplay";
 
 const POSITION_LABEL = {
   "live telemetry": { icon: "🟢", text: "Live telemetry" },
@@ -80,17 +80,19 @@ export default function EarthMoonTracker({ progress, positionSource, positionAcc
       </div>
 
       {/* Stats row */}
-      <div className="flex items-center justify-between mt-3 text-xs sm:text-sm">
-        <div className="text-muted-foreground">
-          <span className="text-foreground font-semibold">{formatNumber(progress?.distanceTraveledKm || 0)}</span> km traveled
+      <div className="flex items-center justify-between mt-3">
+        <div className="text-muted-foreground text-xs">
+          <div className="text-[10px] uppercase tracking-wider mb-0.5">Traveled</div>
+          <DistanceDisplay km={progress?.distanceTraveledKm || 0} />
         </div>
         {positionSource && (
           <div className="text-[10px] text-muted-foreground/50 hidden sm:block text-center px-2">
             {positionSource}
           </div>
         )}
-        <div className="text-muted-foreground text-right">
-          <span className="text-foreground font-semibold">{formatNumber(progress?.distanceRemainingKm || 0)}</span> km remaining
+        <div className="text-muted-foreground text-right text-xs">
+          <div className="text-[10px] uppercase tracking-wider mb-0.5">Remaining</div>
+          <DistanceDisplay km={progress?.distanceRemainingKm || 0} className="items-end" />
         </div>
       </div>
     </div>

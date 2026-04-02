@@ -3,6 +3,7 @@ import { useOutletContext, Link } from "react-router-dom";
 import { Rocket, MapPin, Clock, Gauge, ArrowRight, AlertTriangle, Loader2 } from "lucide-react";
 import moment from "moment";
 import { MISSION, calculateMissionProgress, formatNumber } from "../lib/missionData";
+import { kmToMiles } from "../components/DistanceDisplay";
 import EarthMoonTracker from "../components/EarthMoonTracker";
 import MissionStatusBanner from "../components/MissionStatusBanner";
 import MissionClockDisplay from "../components/MissionClockDisplay";
@@ -106,8 +107,8 @@ export default function Dashboard() {
         />
         <StatCard
           label="Distance Traveled"
-          value={`${formatNumber(progress.distanceTraveledKm)} km`}
-          sub={`of ${formatNumber(MISSION.totalDistanceKm)} km`}
+          value={`${formatNumber(kmToMiles(progress.distanceTraveledKm))} mi`}
+          sub={<><span className="block">{formatNumber(progress.distanceTraveledKm)} km</span><span className="block text-[10px]">of {formatNumber(kmToMiles(MISSION.totalDistanceKm))} mi / {formatNumber(MISSION.totalDistanceKm)} km</span></>}
           icon={MapPin}
         />
         <StatCard
