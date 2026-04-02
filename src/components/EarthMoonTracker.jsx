@@ -1,113 +1,210 @@
 import DistanceDisplay from "./DistanceDisplay";
 
-const POSITION_LABEL = {
-  "live telemetry": { icon: "🟢", text: "Live telemetry" },
-  "estimated":      { icon: "🔵", text: "Calculated from official mission timeline" },
-  "last-known":     { icon: "🟡", text: "Last known official position" },
+// Mission phase timestamps
+const LAUNCH_TIME    = new Date("2026-04-01T22:35:00Z").getTime();
+const FLYBY_START    = new Date("2026-04-06T18:00:00Z").getTime();
+const FLYBY_END      = new Date("2026-04-07T06:00:00Z").getTime();
+const RETURN_END     = new Date("2026-04-11T00:00:00Z").getTime();
+
+// SVG layout constants
+const VB_W = 500;
+const VB_H = 120;
+const EARTH_X = 32;
+const MOON_X  = 468;
+const MID_Y   = 60;
+const OUT_Y   = 52;   // outbound track y
+const RET_Y   = 68;   // return track y
+
+// Compute rocket x,y and rotation from mission time
+function getRocketState(now) {
+  if (now < LAUNCH_TIME) {
+    return { x: EARTH_X + 18, y: OUT_Y, rotate: -45, phase: "Pre-Launch", segment: "outbound", t: 0 };
+  }
+
+  if (now < FLYBY_START) {
+    // Outbound coast
+    const t = (now - LAUNCH_TIME) / (FLYBY_START - LAUNCH_TIME);
+    const x = EARTH_X + 18 + t * (MOON_X - 26 - (EARTH_X + 18));
+    return { x, y: OUT_Y, rotate: -45, phase: "Outbound", segment: "outbound", t };
+  }
+
+  if (now < FLYBY_END) {
+    // Flyby arc — semicircle above Moon
+    const t = (now - FLYBY_START) / (FLYBY_END - FLYBY_START);
+    const angle = Math.PI - t * Math.PI; // π → 0 (left side → right side, curving above)
+    const R = 20;
+    const cx = MOON_X - 4;
+    const cy = MID_Y - 8;
+    const x = cx + R * Math.cos(angle);
+    const y = cy - R * Math.sin(angle);
+    // Tangent angle for rotation
+    const tDx = -Math.sin(angle);
+    const tDy = -Math.cos(angle);
+    const rotate = Math.atan2(tDy, tDx) * (180 / Math.PI) - 90;
+    return { x, y, rotate, phase: "Lunar Flyby", segment: "flyby", t };
+  }
+
+  if (now < RETURN_END) {
+    // Return coast
+    const t = (now - FLYBY_END) / (RETURN_END - FLYBY_END);
+    const x = MOON_X - 26 - t * (MOON_X - 26 - (EARTH_X + 18));
+    return { x, y: RET_Y, rotate: 135, phase: "Returning to Earth", segment: "return", t };
+  }
+
+  // Splashdown
+  return { x: EARTH_X + 18, y: RET_Y, rotate: 135, phase: "Earth Return", segment: "return", t: 1 };
+}
+
+const PHASE_COLORS = {
+  "Pre-Launch":        "text-muted-foreground",
+  "Outbound":          "text-primary",
+  "Lunar Flyby":       "text-yellow-400",
+  "Returning to Earth":"text-secondary",
+  "Earth Return":      "text-green-400",
 };
 
 export default function EarthMoonTracker({ progress, positionSource, positionAccuracy }) {
-  const percent = progress?.percent || 0;
-  const rocketPosition = Math.min(Math.max(percent, 1), 99);
-  const accuracy = positionAccuracy || "estimated";
-  const label = POSITION_LABEL[accuracy] || POSITION_LABEL["estimated"];
+  const now = Date.now();
+  const rocket = getRocketState(now);
+
+  // Outbound fill progress (0–1)
+  const outProgress = rocket.segment === "outbound" ? rocket.t
+    : rocket.segment === "flyby" || rocket.segment === "return" ? 1 : 0;
+
+  // Return fill progress (0–1)
+  const retProgress = rocket.segment === "return" ? rocket.t : 0;
+
+  // Outbound track length (x distance)
+  const trackLen = MOON_X - 26 - (EARTH_X + 18);
 
   return (
     <div className="relative w-full bg-card/50 backdrop-blur-sm rounded-xl border border-border/50 p-4 sm:p-6 overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center justify-between mb-2">
         <span className="text-xs font-mono text-muted-foreground uppercase tracking-wider">
-          Earth → Moon Transit
+          Free-Return Trajectory
         </span>
-        <span className="text-xs font-mono px-2 py-0.5 rounded-full bg-muted/50 text-muted-foreground" title={positionSource || ""}>
-          {label.icon} {label.text}
+        <span className={`text-xs font-semibold px-2 py-0.5 rounded-full bg-muted/50 ${PHASE_COLORS[rocket.phase] || "text-muted-foreground"}`}>
+          {rocket.phase}
         </span>
       </div>
 
-      {/* Track */}
-      <div className="relative h-28 sm:h-32 flex items-center">
-        {/* Route line */}
-        <div className="absolute left-14 right-14 sm:left-16 sm:right-16 top-1/2 -translate-y-1/2 h-[2px]">
-          <div className="w-full h-full bg-border/40 rounded-full" />
-          <div
-            className="absolute top-0 left-0 h-full bg-gradient-to-r from-primary/80 to-secondary/80 rounded-full transition-all duration-1000"
-            style={{ width: `${rocketPosition}%` }}
+      {/* SVG track */}
+      <div className="w-full">
+        <svg
+          viewBox={`0 0 ${VB_W} ${VB_H}`}
+          className="w-full"
+          style={{ height: "clamp(100px, 22vw, 140px)" }}
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          {/* ── Outbound track (background) ── */}
+          <line
+            x1={EARTH_X + 18} y1={OUT_Y}
+            x2={MOON_X - 26}  y2={OUT_Y}
+            stroke="hsl(222 30% 22%)" strokeWidth="2" strokeLinecap="round"
           />
-          {[25, 50, 75].map((mark) => (
-            <div
-              key={mark}
-              className="absolute top-1/2 -translate-y-1/2 w-[1px] h-3 bg-muted-foreground/30"
-              style={{ left: `${mark}%` }}
+          {/* Outbound track fill */}
+          <line
+            x1={EARTH_X + 18} y1={OUT_Y}
+            x2={EARTH_X + 18 + outProgress * trackLen} y2={OUT_Y}
+            stroke="hsl(217 91% 60%)" strokeWidth="2" strokeLinecap="round"
+            opacity="0.85"
+          />
+
+          {/* ── Return track (background) ── */}
+          <line
+            x1={EARTH_X + 18} y1={RET_Y}
+            x2={MOON_X - 26}  y2={RET_Y}
+            stroke="hsl(222 30% 22%)" strokeWidth="2" strokeLinecap="round"
+          />
+          {/* Return track fill — grows right-to-left */}
+          {retProgress > 0 && (
+            <line
+              x1={MOON_X - 26 - retProgress * trackLen} y1={RET_Y}
+              x2={MOON_X - 26} y2={RET_Y}
+              stroke="hsl(180 60% 45%)" strokeWidth="2" strokeLinecap="round"
+              opacity="0.85"
+            />
+          )}
+
+          {/* ── Flyby arc (background) ── */}
+          <path
+            d={`M ${MOON_X - 26},${OUT_Y} A 20,20 0 1 0 ${MOON_X - 26},${RET_Y}`}
+            fill="none" stroke="hsl(222 30% 22%)" strokeWidth="2" strokeDasharray="3 3"
+          />
+
+          {/* ── Tick marks on outbound ── */}
+          {[0.25, 0.5, 0.75].map((f) => (
+            <line
+              key={f}
+              x1={EARTH_X + 18 + f * trackLen} y1={OUT_Y - 4}
+              x2={EARTH_X + 18 + f * trackLen} y2={OUT_Y + 4}
+              stroke="hsl(222 30% 30%)" strokeWidth="1"
             />
           ))}
-        </div>
 
-        {/* Earth */}
-        <div className="absolute left-0 top-1/2 -translate-y-1/2 flex flex-col items-center z-10">
-          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-blue-400 via-green-400 to-blue-600 shadow-lg shadow-blue-500/20 relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-green-500/40 to-transparent rounded-full" />
-            <div className="absolute top-1 left-2 w-2 h-1.5 bg-green-400/60 rounded-full rotate-12" />
-            <div className="absolute bottom-2 right-1 w-3 h-1.5 bg-green-500/50 rounded-full -rotate-12" />
-            <div className="absolute inset-0 rounded-full" style={{background: 'radial-gradient(circle at 35% 35%, rgba(255,255,255,0.15) 0%, transparent 60%)'}} />
-          </div>
-          <span className="text-[10px] sm:text-xs text-muted-foreground mt-1 font-medium">Earth</span>
-        </div>
+          {/* ── Earth ── */}
+          <circle cx={EARTH_X} cy={MID_Y} r="18" fill="url(#earthGrad)" />
+          <circle cx={EARTH_X} cy={MID_Y} r="18" fill="url(#earthShine)" />
+          <text x={EARTH_X} y={MID_Y + 28} textAnchor="middle" fontSize="9" fill="hsl(215 20% 55%)" fontFamily="monospace">Earth</text>
 
-        {/* Rocket */}
-        <div
-          className="absolute top-1/2 -translate-y-1/2 z-20 transition-all duration-1000 ease-out"
-          style={{ left: `calc(${rocketPosition}% * 0.72 + 11%)` }}
-        >
-          <div className="relative flex flex-col items-center -translate-x-1/2">
-            <div className="relative" style={{ animation: 'pulse-glow 2s ease-in-out infinite' }}>
-              {/* SLS-style rocket SVG */}
-              <svg width="22" height="28" viewBox="0 0 22 28" fill="none" xmlns="http://www.w3.org/2000/svg" style={{transform: progress?.isComplete ? 'rotate(-45deg)' : 'rotate(45deg)'}}>
-                {/* Core stage */}
-                <rect x="8" y="6" width="6" height="16" rx="1" fill="hsl(217, 91%, 70%)" />
-                {/* Nose cone / Orion capsule */}
-                <path d="M11 1 L14 6 H8 Z" fill="hsl(217, 91%, 80%)" />
-                {/* Left SRB */}
-                <rect x="4" y="9" width="3" height="12" rx="1" fill="hsl(217, 91%, 60%)" />
-                <path d="M5.5 7 L7 9 H4 Z" fill="hsl(217, 91%, 70%)" />
-                {/* Right SRB */}
-                <rect x="15" y="9" width="3" height="12" rx="1" fill="hsl(217, 91%, 60%)" />
-                <path d="M16.5 7 L18 9 H15 Z" fill="hsl(217, 91%, 70%)" />
-                {/* Engine nozzles */}
-                <rect x="9" y="22" width="4" height="2" rx="0.5" fill="hsl(217, 91%, 50%)" />
-                <rect x="5" y="21" width="2" height="2" rx="0.5" fill="hsl(217, 91%, 50%)" />
-                <rect x="15" y="21" width="2" height="2" rx="0.5" fill="hsl(217, 91%, 50%)" />
-                {/* Flame */}
-                <path d="M9 24 Q11 28 13 24" fill="orange" opacity="0.85" />
-                <path d="M5.2 23 Q6.5 26 7.2 23" fill="orange" opacity="0.7" />
-                <path d="M14.8 23 Q16 26 16.8 23" fill="orange" opacity="0.7" />
-              </svg>
-            </div>
-            <span className="text-[10px] font-mono text-primary mt-1 whitespace-nowrap font-semibold">
-              {percent.toFixed(1)}%
-            </span>
-          </div>
-        </div>
+          {/* ── Moon ── */}
+          <circle cx={MOON_X} cy={MID_Y} r="18" fill="url(#moonGrad)" />
+          <circle cx={MOON_X} cy={MID_Y} r="18" fill="url(#moonShine)" />
+          <text x={MOON_X} y={MID_Y + 28} textAnchor="middle" fontSize="9" fill="hsl(215 20% 55%)" fontFamily="monospace">Moon</text>
 
-        {/* Moon */}
-        <div className="absolute right-0 top-1/2 -translate-y-1/2 flex flex-col items-center z-10">
-          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-gray-200 via-gray-300 to-gray-400 shadow-lg shadow-gray-400/20 flex items-center justify-center text-xs font-bold">
-            🌙
-          </div>
-          <span className="text-[10px] sm:text-xs text-muted-foreground mt-1 font-medium">Moon</span>
-        </div>
+          {/* ── Rocket ── */}
+          <g transform={`translate(${rocket.x}, ${rocket.y}) rotate(${rocket.rotate})`}>
+            {/* glow */}
+            <circle r="10" fill="hsl(217 91% 60% / 0.12)" />
+            {/* SLS body */}
+            <rect x="-3" y="-10" width="6" height="14" rx="1" fill="hsl(217 91% 72%)" />
+            {/* nose */}
+            <path d="M 0,-14 L 3,-10 H -3 Z" fill="hsl(217 91% 85%)" />
+            {/* left SRB */}
+            <rect x="-6" y="-7" width="2.5" height="10" rx="0.7" fill="hsl(217 91% 62%)" />
+            <path d="M -4.75,-9 L -3.5,-7 H -6 Z" fill="hsl(217 91% 72%)" />
+            {/* right SRB */}
+            <rect x="3.5" y="-7" width="2.5" height="10" rx="0.7" fill="hsl(217 91% 62%)" />
+            <path d="M 4.75,-9 L 6,-7 H 3.5 Z" fill="hsl(217 91% 72%)" />
+            {/* flame */}
+            <path d="M -2.5,4 Q 0,8 2.5,4" fill="orange" opacity="0.9" style={{ animation: "rocket-flame 0.4s ease-in-out infinite" }} />
+            <path d="M -5,3 Q -4,5.5 -3.5,3" fill="orange" opacity="0.7" />
+            <path d="M 3.5,3 Q 4,5.5 5,3" fill="orange" opacity="0.7" />
+          </g>
+
+          {/* Defs */}
+          <defs>
+            <radialGradient id="earthGrad" cx="40%" cy="35%">
+              <stop offset="0%" stopColor="hsl(210 80% 60%)" />
+              <stop offset="50%" stopColor="hsl(140 50% 40%)" />
+              <stop offset="100%" stopColor="hsl(210 70% 30%)" />
+            </radialGradient>
+            <radialGradient id="earthShine" cx="30%" cy="25%">
+              <stop offset="0%" stopColor="white" stopOpacity="0.15" />
+              <stop offset="60%" stopColor="white" stopOpacity="0" />
+            </radialGradient>
+            <radialGradient id="moonGrad" cx="40%" cy="35%">
+              <stop offset="0%" stopColor="hsl(220 10% 78%)" />
+              <stop offset="100%" stopColor="hsl(220 10% 42%)" />
+            </radialGradient>
+            <radialGradient id="moonShine" cx="30%" cy="25%">
+              <stop offset="0%" stopColor="white" stopOpacity="0.12" />
+              <stop offset="60%" stopColor="white" stopOpacity="0" />
+            </radialGradient>
+          </defs>
+        </svg>
       </div>
 
       {/* Stats row */}
-      <div className="flex items-center justify-between mt-3">
+      <div className="flex items-center justify-between mt-2">
         <div className="text-muted-foreground text-xs">
           <div className="text-[10px] uppercase tracking-wider mb-0.5">Traveled</div>
           <DistanceDisplay km={progress?.distanceTraveledKm || 0} />
         </div>
-        {positionSource && (
-          <div className="text-[10px] text-muted-foreground/50 hidden sm:block text-center px-2">
-            {positionSource}
-          </div>
-        )}
+        <div className="text-[10px] text-muted-foreground/50 text-center hidden sm:block">
+          {positionAccuracy === "live telemetry" ? "🟢 Live" : "🔵 Timeline-based"}
+        </div>
         <div className="text-muted-foreground text-right text-xs">
           <div className="text-[10px] uppercase tracking-wider mb-0.5">Remaining</div>
           <DistanceDisplay km={progress?.distanceRemainingKm || 0} className="items-end" />
