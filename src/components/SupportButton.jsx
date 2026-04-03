@@ -22,7 +22,7 @@ export default function SupportButton() {
       cancelUrl: `${origin}${window.location.pathname}`,
     });
     if (res.data?.url) {
-      window.location.href = res.data.url;
+      window.open(res.data.url, '_blank');
     }
     setLoading(false);
   };
