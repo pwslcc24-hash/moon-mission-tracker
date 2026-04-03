@@ -93,6 +93,9 @@ export default function Layout() {
                 </Link>
               );
             })}
+            <div className="pt-1">
+              <SupportButton />
+            </div>
           </nav>
         )}
       </div>
