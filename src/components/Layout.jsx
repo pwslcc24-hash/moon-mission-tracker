@@ -5,6 +5,7 @@ import {
   Menu, X, Rocket, Wifi, WifiOff, RefreshCw
 } from "lucide-react";
 import StarsBackground from "./StarsBackground";
+import SupportButton from "./SupportButton";
 import { getLiveData, MISSION } from "../lib/missionData";
 import moment from "moment";
 
@@ -122,6 +123,8 @@ export default function Layout() {
             );
           })}
         </nav>
+        {/* Support button */}
+        <SupportButton />
         {/* Live status + last updated */}
         <div className="px-4 py-4 border-t border-sidebar-border space-y-2">
           <div className="flex items-center justify-between">

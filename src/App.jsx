@@ -13,6 +13,7 @@ import Sources from './pages/Sources';
 import Clocks from './pages/Clocks';
 import Technical from './pages/Technical';
 import DataStatus from './pages/DataStatus';
+import SupportSuccess from './pages/SupportSuccess';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -48,6 +49,7 @@ const AuthenticatedApp = () => {
         <Route path="/clocks" element={<Clocks />} />
         <Route path="/technical" element={<Technical />} />
         <Route path="/data-status" element={<DataStatus />} />
+        <Route path="/support-success" element={<SupportSuccess />} />
         <Route path="*" element={<PageNotFound />} />
       </Route>
     </Routes>
