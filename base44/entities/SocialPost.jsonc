@@ -1,0 +1,65 @@
+{
+  "name": "SocialPost",
+  "type": "object",
+  "properties": {
+    "platform": {
+      "type": "string",
+      "enum": [
+        "X (Twitter)",
+        "Reddit",
+        "Facebook",
+        "Instagram"
+      ],
+      "title": "Platform"
+    },
+    "content": {
+      "type": "string",
+      "title": "Post Content"
+    },
+    "post_type": {
+      "type": "string",
+      "enum": [
+        "live_update",
+        "countdown",
+        "stats",
+        "engagement",
+        "feature_highlight"
+      ],
+      "title": "Post Type"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "ready",
+        "published"
+      ],
+      "default": "draft",
+      "title": "Status"
+    },
+    "mission_event": {
+      "type": "string",
+      "title": "Mission Event"
+    },
+    "scheduled_for": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Scheduled For"
+    },
+    "published_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Published At"
+    },
+    "notes": {
+      "type": "string",
+      "title": "Agent Notes"
+    }
+  },
+  "required": [
+    "platform",
+    "content",
+    "post_type",
+    "status"
+  ]
+}
