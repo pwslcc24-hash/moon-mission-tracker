@@ -1,5 +1,3 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
-
 // ─── Confirmed Mission Constants ───
 // Source: Wikipedia (Artemis II), NASA official pages, NBC News
 // Launch: April 1, 2026, 22:35:12 UTC — confirmed by NASA (exact seconds from Wikipedia infobox)
@@ -203,9 +201,7 @@ const FALLBACK = {
 
 Deno.serve(async (req) => {
   try {
-    const base44 = createClientFromRequest(req);
-
-    // Fetch Spaceflight News articles about Artemis II
+    // Fetch Spaceflight News
     const newsResp = await Promise.allSettled([
       fetch("https://api.spaceflightnewsapi.net/v4/articles/?search=artemis+ii&limit=10&ordering=-published_at").then(r => r.json()),
       fetch("https://api.spaceflightnewsapi.net/v4/articles/?search=artemis+2&limit=5&ordering=-published_at").then(r => r.json()),
