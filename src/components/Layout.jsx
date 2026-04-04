@@ -32,12 +32,17 @@ export default function Layout() {
 
   const fetchData = useCallback(async (isManual = false) => {
     if (isManual) setRefreshing(true);
-    const data = await getLiveData();
-    setMissionData(data);
-    setLastUpdated(new Date());
-    setError(data?.liveDataAvailable === false ? data.liveDataError : null);
-    setLoading(false);
-    if (isManual) setRefreshing(false);
+    try {
+      const data = await getLiveData();
+      setMissionData(data);
+      setLastUpdated(new Date());
+      setError(null);
+    } catch (_err) {
+      setError("Network error");
+    } finally {
+      setLoading(false);
+      if (isManual) setRefreshing(false);
+    }
   }, []);
 
   useEffect(() => {
