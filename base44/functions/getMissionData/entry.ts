@@ -1,20 +1,9 @@
 // ─── Confirmed Mission Constants ───
-// Source: Wikipedia (Artemis II), NASA official pages, NBC News
-// Launch: April 1, 2026, 22:35:12 UTC — confirmed by NASA (exact seconds from Wikipedia infobox)
 const CONFIRMED_LAUNCH_TIME = "2026-04-01T22:35:12Z";
-
-// Earth–Moon average distance: 238,855 miles = 384,400 km (standard IAU value)
-
-// Artemis II is a ~10-day free-return crewed lunar flyby
-// Lunar flyby: April 6 (confirmed by NASA/NBC News) — closest approach ~7,600 km from Moon
-// Splashdown: NET April 11, 2026, 00:21 UTC — source: Wikipedia Artemis II infobox
-const ESTIMATED_ARRIVAL_TIME = "2026-04-06T18:00:00Z";  // ~T+4d 19h, April 6 confirmed
-const ESTIMATED_RETURN_TIME  = "2026-04-11T00:21:00Z";  // NET confirmed: Wikipedia Artemis II
-
-// Average Earth–Moon distance: 238,855 miles / 384,400 km (IAU standard)
-// Total round-trip trajectory (free-return path): ~2.1M km, but outbound leg to Moon = 384,400 km
-const TOTAL_DISTANCE_KM = 384400; // one-way Earth–Moon average distance (km)
-const TOTAL_DISTANCE_MI = 238855; // one-way Earth–Moon average distance (miles)
+const ESTIMATED_ARRIVAL_TIME = "2026-04-06T18:00:00Z";
+const ESTIMATED_RETURN_TIME  = "2026-04-11T00:21:00Z";
+const TOTAL_DISTANCE_KM = 384400;
+const TOTAL_DISTANCE_MI = 238855;
 
 const CREW = [
   { name: "Reid Wiseman",   role: "Commander" },
@@ -23,117 +12,24 @@ const CREW = [
   { name: "Jeremy Hansen",  role: "Mission Specialist (CSA)" },
 ];
 
-// Build milestones from real confirmed/estimated timestamps
 function buildMilestones(launchMs) {
   const L = launchMs;
   const min = 60 * 1000;
   const hr  = 3600 * 1000;
-
   return [
-    {
-      id: "launch",
-      name: "Launch",
-      description: "SLS Block 1 lifts off from KSC Launch Pad 39B",
-      scheduledTime: new Date(L).toISOString(),
-      actualTime: new Date(L).toISOString(),
-      confidence: "confirmed",
-      source: "NASA",
-      sourceUrl: "https://www.nasa.gov/artemis-ii",
-    },
-    {
-      id: "booster-sep",
-      name: "Solid Rocket Booster Separation",
-      description: "Twin SRBs separate at approximately T+2:12",
-      scheduledTime: new Date(L + 2*min + 12*1000).toISOString(),
-      actualTime: new Date(L + 2*min + 12*1000).toISOString(),
-      confidence: "confirmed",
-      source: "NASA",
-      sourceUrl: "https://www.nasa.gov/artemis-ii",
-    },
-    {
-      id: "core-sep",
-      name: "Core Stage Separation",
-      description: "Core stage MECO and separation",
-      scheduledTime: new Date(L + 8*min + 30*1000).toISOString(),
-      actualTime: new Date(L + 8*min + 30*1000).toISOString(),
-      confidence: "confirmed",
-      source: "NASA",
-      sourceUrl: "https://www.nasa.gov/artemis-ii",
-    },
-    {
-      id: "tli",
-      name: "Trans-Lunar Injection Burn",
-      description: "ICPS upper stage fires to send Orion on lunar trajectory",
-      scheduledTime: new Date(L + 1.5*hr).toISOString(),
-      actualTime: new Date(L + 1.5*hr).toISOString(),
-      confidence: "confirmed",
-      source: "NASA",
-      sourceUrl: "https://www.nasa.gov/artemis-ii",
-    },
-    {
-      id: "icps-sep",
-      name: "ICPS Separation",
-      description: "Interim Cryogenic Propulsion Stage separates from Orion",
-      scheduledTime: new Date(L + 2*hr).toISOString(),
-      actualTime: new Date(L + 2*hr).toISOString(),
-      confidence: "confirmed",
-      source: "NASA",
-      sourceUrl: "https://www.nasa.gov/artemis-ii",
-    },
-    {
-      id: "mcc1",
-      name: "Midcourse Correction 1",
-      description: "First trajectory adjustment burn",
-      scheduledTime: new Date(L + 24*hr).toISOString(),
-      actualTime: null,
-      confidence: "estimated",
-      source: "NASA Mission Planning",
-      sourceUrl: "https://www.nasa.gov/artemis-ii",
-    },
-    {
-      id: "mcc2",
-      name: "Midcourse Correction 2",
-      description: "Second trajectory refinement burn",
-      scheduledTime: new Date(L + 56*hr).toISOString(),
-      actualTime: null,
-      confidence: "estimated",
-      source: "NASA Mission Planning",
-      sourceUrl: "https://www.nasa.gov/artemis-ii",
-    },
-    {
-      id: "lunar-flyby",
-      name: "Lunar Flyby (Closest Approach)",
-      description: "Orion performs free-return powered flyby around the Moon",
-      scheduledTime: ESTIMATED_ARRIVAL_TIME,
-      actualTime: null,
-      confidence: "estimated",
-      source: "NASA Artemis II Mission Profile",
-      sourceUrl: "https://www.nasa.gov/artemis-ii",
-    },
-    {
-      id: "return-burn",
-      name: "Return Trajectory Burn",
-      description: "Orion fires engines for Earth return trajectory",
-      scheduledTime: new Date(new Date(ESTIMATED_ARRIVAL_TIME).getTime() + 6*hr).toISOString(),
-      actualTime: null,
-      confidence: "estimated",
-      source: "NASA Mission Planning",
-      sourceUrl: "https://www.nasa.gov/artemis-ii",
-    },
-    {
-      id: "splashdown",
-      name: "Splashdown",
-      description: "Orion capsule splashes down in the Pacific Ocean",
-      scheduledTime: ESTIMATED_RETURN_TIME,
-      actualTime: null,
-      confidence: "estimated",
-      source: "NASA Mission Planning",
-      sourceUrl: "https://www.nasa.gov/artemis-ii",
-    },
+    { id: "launch", name: "Launch", description: "SLS Block 1 lifts off from KSC Launch Pad 39B", scheduledTime: new Date(L).toISOString(), actualTime: new Date(L).toISOString(), confidence: "confirmed", source: "NASA", sourceUrl: "https://www.nasa.gov/artemis-ii" },
+    { id: "booster-sep", name: "Solid Rocket Booster Separation", description: "Twin SRBs separate at approximately T+2:12", scheduledTime: new Date(L + 2*min + 12*1000).toISOString(), actualTime: new Date(L + 2*min + 12*1000).toISOString(), confidence: "confirmed", source: "NASA", sourceUrl: "https://www.nasa.gov/artemis-ii" },
+    { id: "core-sep", name: "Core Stage Separation", description: "Core stage MECO and separation", scheduledTime: new Date(L + 8*min + 30*1000).toISOString(), actualTime: new Date(L + 8*min + 30*1000).toISOString(), confidence: "confirmed", source: "NASA", sourceUrl: "https://www.nasa.gov/artemis-ii" },
+    { id: "tli", name: "Trans-Lunar Injection Burn", description: "ICPS upper stage fires to send Orion on lunar trajectory", scheduledTime: new Date(L + 1.5*hr).toISOString(), actualTime: new Date(L + 1.5*hr).toISOString(), confidence: "confirmed", source: "NASA", sourceUrl: "https://www.nasa.gov/artemis-ii" },
+    { id: "icps-sep", name: "ICPS Separation", description: "Interim Cryogenic Propulsion Stage separates from Orion", scheduledTime: new Date(L + 2*hr).toISOString(), actualTime: new Date(L + 2*hr).toISOString(), confidence: "confirmed", source: "NASA", sourceUrl: "https://www.nasa.gov/artemis-ii" },
+    { id: "mcc1", name: "Midcourse Correction 1", description: "First trajectory adjustment burn", scheduledTime: new Date(L + 24*hr).toISOString(), actualTime: null, confidence: "estimated", source: "NASA Mission Planning", sourceUrl: "https://www.nasa.gov/artemis-ii" },
+    { id: "mcc2", name: "Midcourse Correction 2", description: "Second trajectory refinement burn", scheduledTime: new Date(L + 56*hr).toISOString(), actualTime: null, confidence: "estimated", source: "NASA Mission Planning", sourceUrl: "https://www.nasa.gov/artemis-ii" },
+    { id: "lunar-flyby", name: "Lunar Flyby (Closest Approach)", description: "Orion performs free-return powered flyby around the Moon", scheduledTime: ESTIMATED_ARRIVAL_TIME, actualTime: null, confidence: "estimated", source: "NASA Artemis II Mission Profile", sourceUrl: "https://www.nasa.gov/artemis-ii" },
+    { id: "return-burn", name: "Return Trajectory Burn", description: "Orion fires engines for Earth return trajectory", scheduledTime: new Date(new Date(ESTIMATED_ARRIVAL_TIME).getTime() + 6*hr).toISOString(), actualTime: null, confidence: "estimated", source: "NASA Mission Planning", sourceUrl: "https://www.nasa.gov/artemis-ii" },
+    { id: "splashdown", name: "Splashdown", description: "Orion capsule splashes down in the Pacific Ocean", scheduledTime: ESTIMATED_RETURN_TIME, actualTime: null, confidence: "estimated", source: "NASA Mission Planning", sourceUrl: "https://www.nasa.gov/artemis-ii" },
   ];
 }
 
-// Calculate best-possible current position from confirmed timestamps
 function calculateProgress(launchTime, arrivalTime) {
   const now = Date.now();
   const launchMs = new Date(launchTime).getTime();
@@ -142,12 +38,10 @@ function calculateProgress(launchTime, arrivalTime) {
   const elapsedMs = now - launchMs;
 
   if (elapsedMs < 0) {
-    return { percent: 0, distanceTraveled: 0, distanceRemaining: TOTAL_DISTANCE_KM,
-      phase: "Pre-Launch", elapsedMs: 0, remainingMs: Math.abs(elapsedMs), isPreLaunch: true };
+    return { percent: 0, distanceTraveled: 0, distanceRemaining: TOTAL_DISTANCE_KM, phase: "Pre-Launch", elapsedMs: 0, remainingMs: Math.abs(elapsedMs), isPreLaunch: true };
   }
   if (elapsedMs >= totalMs) {
-    return { percent: 100, distanceTraveled: TOTAL_DISTANCE_KM, distanceRemaining: 0,
-      phase: "Lunar Flyby / Return", elapsedMs, remainingMs: 0, isPreLaunch: false };
+    return { percent: 100, distanceTraveled: TOTAL_DISTANCE_KM, distanceRemaining: 0, phase: "Lunar Flyby / Return", elapsedMs, remainingMs: 0, isPreLaunch: false };
   }
 
   const percent = Math.min(100, (elapsedMs / totalMs) * 100);
@@ -172,72 +66,59 @@ function calculateProgress(launchTime, arrivalTime) {
   };
 }
 
-const FALLBACK = {
-  missionName: "Artemis II",
-  currentStatus: "Mission Active – En Route to Moon",
-  currentPhase: "Trans-Lunar Coast",
-  launchTime: CONFIRMED_LAUNCH_TIME,
-  arrivalTime: ESTIMATED_ARRIVAL_TIME,
-  returnTime: ESTIMATED_RETURN_TIME,
-  nextEvent: "Lunar Flyby",
-  nextEventTime: ESTIMATED_ARRIVAL_TIME,
-  totalDistanceKm: TOTAL_DISTANCE_KM,
-  agency: "NASA / CSA",
-  vehicle: "Orion MPCV / SLS Block 1",
-  launchSite: "Kennedy Space Center, LC-39B",
-  missionType: "Crewed Lunar Free-Return Flyby",
-  missionDurationDays: 10,
-  description: "First crewed mission beyond Earth orbit since Apollo 17 in 1972. Four astronauts fly a free-return trajectory around the Moon aboard NASA's Orion spacecraft.",
-  crew: CREW,
-  positionSource: "Calculated from official mission timeline (NASA/Wikipedia)",
-  positionAccuracy: "estimated",
-  positionSourceUrl: "https://en.wikipedia.org/wiki/Artemis_II",
-  dataNote: "Position calculated from confirmed NASA launch time. Flyby/splashdown times are NET estimates from official sources.",
-  liveDataAvailable: false,
-  liveDataError: "Data temporarily unavailable — waiting for confirmed mission update.",
-  updates: [],
-  source: "fallback",
-};
+async function fetchWithTimeout(url, ms = 6000) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), ms);
+  try {
+    const res = await fetch(url, { signal: controller.signal });
+    return await res.json();
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+const FALLBACK_UPDATES = [];
 
 Deno.serve(async (req) => {
   try {
-    // Fetch Spaceflight News
-    const newsResp = await Promise.allSettled([
-      fetch("https://api.spaceflightnewsapi.net/v4/articles/?search=artemis+ii&limit=10&ordering=-published_at").then(r => r.json()),
-      fetch("https://api.spaceflightnewsapi.net/v4/articles/?search=artemis+2&limit=5&ordering=-published_at").then(r => r.json()),
-    ]);
-
-    const news1 = newsResp[0].status === "fulfilled" ? (newsResp[0].value?.results || []) : [];
-    const news2 = newsResp[1].status === "fulfilled" ? (newsResp[1].value?.results || []) : [];
-
-    // Deduplicate by URL
-    const seen = new Set();
-    const allArticles = [...news1, ...news2].filter(a => {
-      if (seen.has(a.url)) return false;
-      seen.add(a.url);
-      return true;
-    }).sort((a, b) => new Date(b.published_at) - new Date(a.published_at)).slice(0, 8);
-
-    const liveDataAvailable = allArticles.length > 0;
-
-    const updates = allArticles.map((article, i) => ({
-      id: `live-${i}`,
-      title: article.title,
-      body: article.summary || article.title,
-      timestamp: article.published_at,
-      source: article.news_site,
-      sourceType: article.news_site === "NASA" ? "official" : "news",
-      sourceUrl: article.url,
-      category: "live",
-    }));
-
     const now = new Date();
     const launchMs = new Date(CONFIRMED_LAUNCH_TIME).getTime();
     const progress = calculateProgress(CONFIRMED_LAUNCH_TIME, ESTIMATED_ARRIVAL_TIME);
     const milestones = buildMilestones(launchMs);
-
-    // Find next upcoming milestone
     const nextMilestone = milestones.find(m => !m.actualTime && new Date(m.scheduledTime) > now);
+
+    // Fetch news with a strict timeout — never block the response
+    let updates = [];
+    let liveDataAvailable = false;
+
+    try {
+      const [news1, news2] = await Promise.all([
+        fetchWithTimeout("https://api.spaceflightnewsapi.net/v4/articles/?search=artemis+ii&limit=10&ordering=-published_at"),
+        fetchWithTimeout("https://api.spaceflightnewsapi.net/v4/articles/?search=artemis+2&limit=5&ordering=-published_at"),
+      ]);
+
+      const seen = new Set();
+      const allArticles = [...(news1?.results || []), ...(news2?.results || [])].filter(a => {
+        if (seen.has(a.url)) return false;
+        seen.add(a.url);
+        return true;
+      }).sort((a, b) => new Date(b.published_at) - new Date(a.published_at)).slice(0, 8);
+
+      liveDataAvailable = allArticles.length > 0;
+      updates = allArticles.map((article, i) => ({
+        id: `live-${i}`,
+        title: article.title,
+        body: article.summary || article.title,
+        timestamp: article.published_at,
+        source: article.news_site,
+        sourceType: article.news_site === "NASA" ? "official" : "news",
+        sourceUrl: article.url,
+        category: "live",
+      }));
+    } catch (_err) {
+      // News fetch timed out — proceed with empty updates
+      liveDataAvailable = false;
+    }
 
     return Response.json({
       missionName: "Artemis II",
@@ -272,17 +153,12 @@ Deno.serve(async (req) => {
       milestones,
       updates,
       liveDataAvailable,
-      liveDataError: liveDataAvailable ? null : "Spaceflight News API returned no results",
+      liveDataError: liveDataAvailable ? null : "Spaceflight News API unavailable",
       source: liveDataAvailable ? "spaceflight-news-api" : "calculated",
       timestamp: now.toISOString(),
       lastUpdated: now.toISOString(),
     });
   } catch (error) {
-    return Response.json({
-      ...FALLBACK,
-      liveDataError: error.message,
-      timestamp: new Date().toISOString(),
-      lastUpdated: new Date().toISOString(),
-    });
+    return Response.json({ error: error.message }, { status: 500 });
   }
 });
