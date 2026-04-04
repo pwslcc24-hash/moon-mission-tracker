@@ -43,19 +43,7 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6">
-      {/* Stale data warning */}
-      {error && (
-        <div className="flex items-center gap-3 px-4 py-3 rounded-xl border border-yellow-500/30 bg-yellow-500/10 text-sm text-yellow-300">
-          <AlertTriangle className="w-4 h-4 shrink-0" />
-          <div>
-            <span className="font-semibold">Live data temporarily unavailable.</span>
-            <span className="text-yellow-300/70 ml-2">
-              Showing calculated estimates from confirmed mission timeline.
-              {lastUpdated && ` Last successful update: ${moment(lastUpdated).fromNow()}.`}
-            </span>
-          </div>
-        </div>
-      )}
+      {/* News unavailable — subtle note only if function itself failed completely */}
 
       {/* Status Banner */}
       <MissionStatusBanner
