@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useOutletContext, Link } from "react-router-dom";
 import { Rocket, MapPin, Clock, Gauge, ArrowRight, AlertTriangle, Loader2 } from "lucide-react";
 import moment from "moment";
-import { MISSION, calculateMissionProgress, formatNumber } from "../lib/missionData";
+import { MISSION, calculateMissionProgress, formatNumber, getMissionFullDistances, FULL_MISSION_KM, FULL_MISSION_MI } from "../lib/missionData";
 import { kmToMiles } from "../components/DistanceDisplay";
 import EarthMoonTracker from "../components/EarthMoonTracker";
 import MissionStatusBanner from "../components/MissionStatusBanner";
@@ -25,6 +25,7 @@ export default function Dashboard() {
     setProgress(calculateMissionProgress(missionData || MISSION));
   }, [missionData, tick]);
 
+  const fullDist = getMissionFullDistances();
   const milestones = missionData?.milestones || [];
   const latestUpdates = (missionData?.updates || []).slice(0, 3);
   const nextMilestone = milestones.find(m => !m.actualTime && new Date(m.scheduledTime) > new Date());
@@ -95,8 +96,8 @@ export default function Dashboard() {
         />
         <StatCard
           label="Distance Traveled"
-          value={`${formatNumber(kmToMiles(progress.distanceTraveledKm))} mi`}
-          sub={<><span className="block">{formatNumber(progress.distanceTraveledKm)} km</span><span className="block text-[10px]">of {formatNumber(kmToMiles(MISSION.totalDistanceKm))} mi / {formatNumber(MISSION.totalDistanceKm)} km</span></>}
+          value={`${formatNumber(kmToMiles(fullDist.traveled))} mi`}
+          sub={<><span className="block">{formatNumber(fullDist.traveled)} km</span><span className="block text-[10px]">of {formatNumber(FULL_MISSION_MI)} mi / {formatNumber(FULL_MISSION_KM)} km</span></>}
           icon={MapPin}
         />
         <StatCard

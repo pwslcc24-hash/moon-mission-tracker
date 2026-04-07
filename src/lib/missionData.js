@@ -1,6 +1,35 @@
 // Moon Mission Tracker – Data Service Layer (Live Only)
 import { base44 } from '@/api/base44Client';
 
+// ─── Full free-return mission distances ───
+const LAUNCH_MS    = new Date("2026-04-01T22:35:12Z").getTime();
+const FLYBY_START_MS = new Date("2026-04-06T18:00:00Z").getTime();
+const FLYBY_END_MS   = new Date("2026-04-07T06:00:00Z").getTime();
+const RETURN_END_MS  = new Date("2026-04-11T00:21:00Z").getTime();
+
+export const FULL_MISSION_KM = 384400 + 20000 + 384400; // 788,800 km
+export const FULL_MISSION_MI = Math.round(FULL_MISSION_KM * 0.621371); // ~490,007 mi
+
+export function getMissionFullDistances(now = Date.now()) {
+  if (now <= LAUNCH_MS) return { traveled: 0, remaining: FULL_MISSION_KM };
+  if (now < FLYBY_START_MS) {
+    const t = (now - LAUNCH_MS) / (FLYBY_START_MS - LAUNCH_MS);
+    const traveled = Math.round(t * 384400);
+    return { traveled, remaining: FULL_MISSION_KM - traveled };
+  }
+  if (now < FLYBY_END_MS) {
+    const t = (now - FLYBY_START_MS) / (FLYBY_END_MS - FLYBY_START_MS);
+    const traveled = Math.round(384400 + t * 20000);
+    return { traveled, remaining: FULL_MISSION_KM - traveled };
+  }
+  if (now < RETURN_END_MS) {
+    const t = (now - FLYBY_END_MS) / (RETURN_END_MS - FLYBY_END_MS);
+    const traveled = Math.round(384400 + 20000 + t * 384400);
+    return { traveled, remaining: FULL_MISSION_KM - traveled };
+  }
+  return { traveled: FULL_MISSION_KM, remaining: 0 };
+}
+
 // ─── Static confirmed mission constants (used as fallback / reference) ───
 export const MISSION = {
   name: "Artemis II",
