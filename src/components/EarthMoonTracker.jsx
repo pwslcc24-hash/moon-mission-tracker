@@ -18,6 +18,36 @@ const MID_Y   = 60;
 const OUT_Y   = 52;   // outbound track y
 const RET_Y   = 68;   // return track y
 
+// Full mission distances (km)
+const DIST_OUTBOUND = 384400;  // Earth → Moon
+const DIST_FLYBY    = 20000;   // flyby arc approximation
+const DIST_RETURN   = 384400;  // Moon → Earth
+const DIST_TOTAL    = DIST_OUTBOUND + DIST_FLYBY + DIST_RETURN;
+
+function getMissionDistances(now) {
+  if (now <= LAUNCH_TIME) return { traveled: 0, remaining: DIST_TOTAL };
+
+  if (now < FLYBY_START) {
+    const t = (now - LAUNCH_TIME) / (FLYBY_START - LAUNCH_TIME);
+    const traveled = Math.round(t * DIST_OUTBOUND);
+    return { traveled, remaining: DIST_TOTAL - traveled };
+  }
+
+  if (now < FLYBY_END) {
+    const t = (now - FLYBY_START) / (FLYBY_END - FLYBY_START);
+    const traveled = Math.round(DIST_OUTBOUND + t * DIST_FLYBY);
+    return { traveled, remaining: DIST_TOTAL - traveled };
+  }
+
+  if (now < RETURN_END) {
+    const t = (now - FLYBY_END) / (RETURN_END - FLYBY_END);
+    const traveled = Math.round(DIST_OUTBOUND + DIST_FLYBY + t * DIST_RETURN);
+    return { traveled, remaining: DIST_TOTAL - traveled };
+  }
+
+  return { traveled: DIST_TOTAL, remaining: 0 };
+}
+
 // Align rocket nose (local up = (0,-1)) with movement direction (dx, dy)
 // SVG rotate(θ) clockwise: maps (0,-1) → (sin θ, -cos θ)
 // So to point nose in direction (dx,dy): θ = atan2(dx, -dy)
@@ -77,6 +107,7 @@ const PHASE_COLORS = {
 export default function EarthMoonTracker({ progress, positionSource, positionAccuracy }) {
   const now = Date.now();
   const rocket = getRocketState(now);
+  const missionDist = getMissionDistances(now);
 
   // Outbound fill progress (0–1)
   const outProgress = rocket.segment === "outbound" ? rocket.t
@@ -228,14 +259,14 @@ export default function EarthMoonTracker({ progress, positionSource, positionAcc
       <div className="flex items-center justify-between mt-2">
         <div className="text-muted-foreground text-xs">
           <div className="text-[10px] uppercase tracking-wider mb-0.5">Traveled</div>
-          <DistanceDisplay km={progress?.distanceTraveledKm || 0} />
+          <DistanceDisplay km={missionDist.traveled} />
         </div>
         <div className="text-[10px] text-muted-foreground/50 text-center hidden sm:block">
           {positionAccuracy === "live telemetry" ? "🟢 Live" : "🔵 Timeline-based"}
         </div>
         <div className="text-muted-foreground text-right text-xs">
           <div className="text-[10px] uppercase tracking-wider mb-0.5">Remaining</div>
-          <DistanceDisplay km={progress?.distanceRemainingKm || 0} className="items-end" />
+          <DistanceDisplay km={missionDist.remaining} className="items-end" />
         </div>
       </div>
     </div>
