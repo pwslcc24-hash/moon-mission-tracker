@@ -18,47 +18,52 @@ const MID_Y   = 60;
 const OUT_Y   = 52;   // outbound track y
 const RET_Y   = 68;   // return track y
 
+// Align rocket nose (local up = (0,-1)) with movement direction (dx, dy)
+// SVG rotate(θ) clockwise: maps (0,-1) → (sin θ, -cos θ)
+// So to point nose in direction (dx,dy): θ = atan2(dx, -dy)
+function dirAngle(dx, dy) {
+  return Math.atan2(dx, -dy) * (180 / Math.PI);
+}
+
 // Compute rocket x,y and rotation from mission time
 function getRocketState(now) {
   if (now < LAUNCH_TIME) {
-    return { x: EARTH_X + 18, y: OUT_Y, rotate: -45, phase: "Pre-Launch", segment: "outbound", t: 0 };
+    return { x: EARTH_X + 18, y: OUT_Y, angle: dirAngle(1, 0), phase: "Pre-Launch", segment: "outbound", t: 0 };
   }
 
   if (now < FLYBY_START) {
-    // Outbound coast
+    // Outbound coast — moving right
     const t = (now - LAUNCH_TIME) / (FLYBY_START - LAUNCH_TIME);
     const x = EARTH_X + 18 + t * (MOON_X - 26 - (EARTH_X + 18));
-    return { x, y: OUT_Y, rotate: -45, phase: "Outbound", segment: "outbound", t };
+    return { x, y: OUT_Y, angle: dirAngle(1, 0), phase: "Outbound", segment: "outbound", t };
   }
 
   if (now < FLYBY_END) {
-    // Flyby arc — orbit around Moon's far side (right side)
+    // Flyby arc around Moon
     const t = (now - FLYBY_START) / (FLYBY_END - FLYBY_START);
-    // Start angle: upper-left of Moon (approaching from outbound track)
-    // End angle: lower-left of Moon (departing on return track)
-    // Arc goes rightward (through far side) — the long way around
-    const startA = Math.atan2(OUT_Y - MID_Y, (MOON_X - 26) - MOON_X); // ≈ upper-left
-    const endA   = Math.atan2(RET_Y - MID_Y, (MOON_X - 26) - MOON_X); // ≈ lower-left
-    const sweep  = endA - startA; // positive sweep goes through far (right) side
+    const startA = Math.atan2(OUT_Y - MID_Y, (MOON_X - 26) - MOON_X);
+    const endA   = Math.atan2(RET_Y - MID_Y, (MOON_X - 26) - MOON_X);
+    const sweep  = endA - startA;
     const R = Math.sqrt(Math.pow((MOON_X - 26) - MOON_X, 2) + Math.pow(OUT_Y - MID_Y, 2));
     const a = startA + t * sweep;
     const x = MOON_X + R * Math.cos(a);
     const y = MID_Y  + R * Math.sin(a);
-    const tDx = -Math.sin(a);
-    const tDy =  Math.cos(a);
-    const rotate = Math.atan2(tDy, tDx) * (180 / Math.PI) - 90;
-    return { x, y, rotate, phase: "Lunar Flyby", segment: "flyby", t };
+    // Tangent of counterclockwise arc: (-sin a, cos a) * sign(sweep)
+    const sign = sweep >= 0 ? 1 : -1;
+    const tDx = -Math.sin(a) * sign;
+    const tDy =  Math.cos(a) * sign;
+    return { x, y, angle: dirAngle(tDx, tDy), phase: "Lunar Flyby", segment: "flyby", t };
   }
 
   if (now < RETURN_END) {
-    // Return coast
+    // Return coast — moving left
     const t = (now - FLYBY_END) / (RETURN_END - FLYBY_END);
     const x = MOON_X - 26 - t * (MOON_X - 26 - (EARTH_X + 18));
-    return { x, y: RET_Y, rotate: 135, phase: "Returning to Earth", segment: "return", t };
+    return { x, y: RET_Y, angle: dirAngle(-1, 0), phase: "Returning to Earth", segment: "return", t };
   }
 
   // Splashdown
-  return { x: EARTH_X + 18, y: RET_Y, rotate: 135, phase: "Earth Return", segment: "return", t: 1 };
+  return { x: EARTH_X + 18, y: RET_Y, angle: dirAngle(-1, 0), phase: "Earth Return", segment: "return", t: 1 };
 }
 
 const PHASE_COLORS = {
@@ -156,7 +161,7 @@ export default function EarthMoonTracker({ progress, positionSource, positionAcc
           <text x={MOON_X} y={MID_Y + 28} textAnchor="middle" fontSize="9" fill="hsl(215 20% 55%)" fontFamily="monospace">Moon</text>
 
           {/* ── Rocket ── */}
-          <g transform={`translate(${rocket.x}, ${rocket.y}) rotate(${rocket.segment === 'flyby' ? rocket.rotate : rocket.segment === 'return' ? -90 : 90})`}>
+          <g transform={`translate(${rocket.x}, ${rocket.y}) rotate(${rocket.angle})`}>
             {/* glow */}
             <circle r="10" fill="hsl(217 91% 60% / 0.12)" />
             {/* SLS body */}
