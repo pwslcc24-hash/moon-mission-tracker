@@ -156,7 +156,7 @@ export default function EarthMoonTracker({ progress, positionSource, positionAcc
           <text x={MOON_X} y={MID_Y + 28} textAnchor="middle" fontSize="9" fill="hsl(215 20% 55%)" fontFamily="monospace">Moon</text>
 
           {/* ── Rocket ── */}
-          <g transform={`translate(${rocket.x}, ${rocket.y}) scale(${rocket.segment === 'return' ? 1 : -1}, 1) rotate(${rocket.segment === 'flyby' ? rocket.rotate : -45})`}>
+          <g transform={`translate(${rocket.x}, ${rocket.y}) rotate(${rocket.segment === 'flyby' ? rocket.rotate : rocket.segment === 'return' ? -90 : 90})`}>
             {/* glow */}
             <circle r="10" fill="hsl(217 91% 60% / 0.12)" />
             {/* SLS body */}
