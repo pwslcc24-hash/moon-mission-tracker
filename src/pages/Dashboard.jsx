@@ -39,8 +39,9 @@ export default function Dashboard() {
     );
   }
 
-  const launchMs   = new Date(missionData?.launchTime  || MISSION.launchDate).getTime();
-  const arrivalMs  = new Date(missionData?.arrivalTime || MISSION.lunarArrivalDate).getTime();
+  const launchMs     = new Date(missionData?.launchTime  || MISSION.launchDate).getTime();
+  const arrivalMs    = new Date(missionData?.arrivalTime || MISSION.lunarArrivalDate).getTime();
+  const splashdownMs = new Date(MISSION.returnDate).getTime();
 
   return (
     <div className="space-y-6">
@@ -67,6 +68,7 @@ export default function Dashboard() {
           targetMs={launchMs}
           type="elapsed"
           accent="green"
+          capMs={splashdownMs}
         />
         <MissionClockDisplay
           label="Countdown to Lunar Flyby"

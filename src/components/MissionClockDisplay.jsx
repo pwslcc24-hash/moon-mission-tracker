@@ -16,15 +16,16 @@ function ClockDigit({ value, label }) {
   );
 }
 
-export default function MissionClockDisplay({ label, targetMs, type = "countdown", accent = "primary", note }) {
+export default function MissionClockDisplay({ label, targetMs, type = "countdown", accent = "primary", note, capMs }) {
   // Use a ref for the interval to prevent drift — recalculate from wall clock each tick
+  const clampedNow = () => capMs ? Math.min(Date.now(), capMs) : Date.now();
   const [displayMs, setDisplayMs] = useState(() =>
-    type === "countdown" ? Math.max(0, targetMs - Date.now()) : Math.max(0, Date.now() - targetMs)
+    type === "countdown" ? Math.max(0, targetMs - clampedNow()) : Math.max(0, clampedNow() - targetMs)
   );
 
   useEffect(() => {
     const tick = () => {
-      const now = Date.now();
+      const now = capMs ? Math.min(Date.now(), capMs) : Date.now();
       setDisplayMs(type === "countdown" ? Math.max(0, targetMs - now) : Math.max(0, now - targetMs));
     };
     tick();
